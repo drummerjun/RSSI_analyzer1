@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -26,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.empers.rssi_analyzer.Adapter.GroupGridAdapter;
 import com.empers.rssi_analyzer.database.GroupDB;
@@ -51,15 +53,20 @@ public class SelectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selection);
 
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, "BLE Not Supported", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         toolbar.setTitle(getString(R.string.app_name));
         setSupportActionBar(toolbar);
 
         mRecGrid = (GridView)findViewById(R.id.node_grid);
-        dataBase = new GroupDB(getApplicationContext());
         new AsyncTask<Void, Void, List<Group>>() {
             @Override
             protected List<Group> doInBackground(Void... params) {
+                dataBase = new GroupDB(getApplicationContext());
                 return dataBase.getAllGroups();
             }
             @Override
@@ -76,7 +83,6 @@ public class SelectionActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main, menu);
         menu.findItem(R.id.action_edit).setVisible(false);
         menu.findItem(R.id.action_search_ble).setVisible(false);
-        menu.findItem(R.id.action_pair).setVisible(false);
         invalidateOptionsMenu();
         return true;
     }

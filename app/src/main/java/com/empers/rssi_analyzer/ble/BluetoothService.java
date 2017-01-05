@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-package com.empers.rssi_analyzer;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.UUID;
+package com.empers.rssi_analyzer.ble;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -32,6 +26,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.UUID;
 
 @SuppressLint("NewApi")
 public class BluetoothService {
@@ -45,7 +45,7 @@ public class BluetoothService {
     private static final UUID UUID_ANDROID_DEVICE =
             UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
     private static final UUID UUID_OTHER_DEVICE =
-    		UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");    
+    		UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     
     // Member fields
     private final BluetoothAdapter mAdapter;
@@ -212,11 +212,14 @@ public class BluetoothService {
 
             // Create a new listening server socket
             try {
-                if(isAndroid)
+                if(isAndroid) {
                     tmp = mAdapter.listenUsingRfcommWithServiceRecord(NAME_SECURE, UUID_ANDROID_DEVICE);
-                else
+                } else {
                     tmp = mAdapter.listenUsingRfcommWithServiceRecord(NAME_SECURE, UUID_OTHER_DEVICE);
-            } catch (IOException e) { }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             mmServerSocket = tmp;
         }
 
@@ -231,9 +234,6 @@ public class BluetoothService {
                     // successful connection or an exception
                     socket = mmServerSocket.accept();
                 } catch (IOException e) {
-                    break;
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
                     break;
                 }
 
@@ -264,11 +264,7 @@ public class BluetoothService {
             try {
                 mmServerSocket.close();
                 mmServerSocket = null;
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (NullPointerException ex) {
-                ex.printStackTrace();
-            }
+            } catch (IOException e) { }
         }
 
         public void kill() {

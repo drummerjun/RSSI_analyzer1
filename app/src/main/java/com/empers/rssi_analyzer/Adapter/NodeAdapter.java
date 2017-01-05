@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -20,7 +19,6 @@ import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
-import com.empers.rssi_analyzer.Constants;
 import com.empers.rssi_analyzer.R;
 import com.empers.rssi_analyzer.database.NodeDB;
 import com.empers.rssi_analyzer.objects.Node;
@@ -29,7 +27,6 @@ import com.wang.avi.AVLoadingIndicatorView;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 public class NodeAdapter extends RecyclerView.Adapter<NodeAdapter.NodeViewHolder> {
 	private static final String TAG = NodeAdapter.class.getSimpleName();
@@ -235,14 +232,9 @@ public class NodeAdapter extends RecyclerView.Adapter<NodeAdapter.NodeViewHolder
 	}
 
     private void testNodeSignal(int nodeID){
-        String msg = String.format(Locale.getDefault(), "{\"CMD\":\"scan\",\"ID\":%d}", nodeID);
-        Intent intent = new Intent(Constants.ACTION_SCAN);
+        Intent intent = new Intent("com.bt.action_scan");
         intent.putExtra("NODE_ID", nodeID);
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-        //mBluetooth.send(msg,true);
-        //if(app.setSCAN(nodeID, true)) {
-        //    notifyDataSetChanged();
-        //}
+        context.sendBroadcast(intent);
     }
 
     public void setNodeScan(int node_id, boolean isScanning, int rssi) {

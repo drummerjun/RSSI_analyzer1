@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package com.empers.rssi_analyzer;
-
-import java.util.ArrayList;
-import java.util.Set;
+package com.empers.rssi_analyzer.ble;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -28,6 +25,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.Set;
 
 @SuppressLint("NewApi")
 public class BluetoothSPP {
@@ -69,22 +69,22 @@ public class BluetoothSPP {
     }
     
     public interface BluetoothStateListener {
-        void onServiceStateChanged(int state);
+        public void onServiceStateChanged(int state);
     }
     
     public interface OnDataReceivedListener {
-        void onDataReceived(byte[] data, String message);
+        public void onDataReceived(byte[] data, String message);
     }
     
     public interface BluetoothConnectionListener {
-        void onDeviceConnected(String name, String address);
-        void onDeviceDisconnected();
-        void onDeviceConnectionFailed();
+        public void onDeviceConnected(String name, String address);
+        public void onDeviceDisconnected();
+        public void onDeviceConnectionFailed();
     }
     
     public interface AutoConnectionListener {
-        void onAutoConnectionStarted();
-        void onNewConnection(String name, String address);
+        public void onAutoConnectionStarted();
+        public void onNewConnection(String name, String address);
     }
     
     public boolean isBluetoothAvailable() {
@@ -130,11 +130,10 @@ public class BluetoothSPP {
     }
     
     public int getServiceState() {
-        if(mChatService != null) {
+        if(mChatService != null) 
             return mChatService.getState();
-        } else {
+        else 
             return -1;
-        }
     }
     
     public void startService(boolean isAndroid) {
@@ -230,13 +229,9 @@ public class BluetoothSPP {
     	Log.i(TAG, "connect(Intent data)");
         String address = data.getExtras().getString(BluetoothState.EXTRA_DEVICE_ADDRESS);
         Log.i(TAG, "address="+address);
-        try {
-            BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
-            if (mChatService != null) mChatService.connect(device);
-            else Log.i(TAG, "mChatService == null");
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
+        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+        if(mChatService != null) mChatService.connect(device);
+        else Log.i(TAG, "mChatService == null");
     }
     
     public void connect(String address) {
@@ -293,7 +288,8 @@ public class BluetoothSPP {
     
     public void send(String data, boolean CRLF) {
         if(mChatService.getState() == BluetoothState.STATE_CONNECTED) {
-            if(CRLF) data += "\r\n";
+            if(CRLF) 
+                data += "\r\n"; 
             mChatService.write(data.getBytes());
         }
     }
@@ -308,9 +304,9 @@ public class BluetoothSPP {
     
     public String[] getPairedDeviceName() {
         int c = 0;
-        Set<BluetoothDevice> devices = mBluetoothAdapter.getBondedDevices();  
+        Set<BluetoothDevice> devices = mBluetoothAdapter.getBondedDevices();
         String[] name_list = new String[devices.size()];
-        for(BluetoothDevice device : devices) {  
+        for(BluetoothDevice device : devices) {
             name_list[c] = device.getName();
             c++;
         }  
@@ -319,9 +315,9 @@ public class BluetoothSPP {
     
     public String[] getPairedDeviceAddress() {
         int c = 0;
-        Set<BluetoothDevice> devices = mBluetoothAdapter.getBondedDevices();  
+        Set<BluetoothDevice> devices = mBluetoothAdapter.getBondedDevices();
         String[] address_list = new String[devices.size()];
-        for(BluetoothDevice device : devices) {  
+        for(BluetoothDevice device : devices) {
             address_list[c] = device.getAddress();
             c++;
         }  
@@ -376,14 +372,12 @@ public class BluetoothSPP {
 
             setBluetoothConnectionListener(bcl);
             c = 0;
-            if(mAutoConnectionListener != null) {
+            if(mAutoConnectionListener != null)
                 mAutoConnectionListener.onNewConnection(arr_name[c], arr_address[c]);
-            }
-            if(arr_filter_address.size() > 0) {
+            if(arr_filter_address.size() > 0) 
                 connect(arr_filter_address.get(c));
-            } else {
+            else 
                 Toast.makeText(mContext, "Device name mismatch", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 }

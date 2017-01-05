@@ -15,7 +15,7 @@
  */
 
 
-package com.empers.rssi_analyzer;
+package com.empers.rssi_analyzer.ble;
 
 public class BluetoothState {
     // Constants that indicate the current connection state

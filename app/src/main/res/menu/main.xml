@@ -24,14 +24,10 @@
         android:title="@string/rename"
         android:orderInCategory="1"
         android:icon="@android:drawable/ic_menu_edit"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="never"/>
     <item android:id="@+id/action_search_ble"
         android:title="@string/action_ble"
         android:orderInCategory="1"
         android:icon="@android:drawable/ic_menu_search"
-        app:showAsAction="never"/>
-    <item android:id="@+id/action_pair"
-        android:title="@string/action_pair"
-        android:icon="@android:drawable/ic_menu_set_as"
         app:showAsAction="never"/>
 </menu>

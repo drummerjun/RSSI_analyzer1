@@ -53,4 +53,7 @@
     <string name="error_name">This field cannot be empty</string>
     <string name="action_ble">Scan BLE</string>
     <string name="action_pair">Pair Z-Wave</string>
+    <string name="empty_mac_title">Invalid MAC address</string>
+    <string name="empty_mac_message">Press OK to scan MAC, or Back to exit.</string>
+    <string name="back">Back</string>
 </resources>
