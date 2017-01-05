@@ -1,4 +1,4 @@
-package com.empers.rssi_analyzer.Adapter;
+package com.empers.rssi_analyzer.adapters;
 
 import android.app.Activity;
 import android.content.Context;
