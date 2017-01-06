@@ -13,6 +13,5 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/activity_horizontal_margin"
         app:backgroundTint="@color/colorAccentOrange"
-        app:layout_behavior="com.empers.rssi_analyzer.MainActivity$ScrollAwareFABBehavior"
-        android:src="@android:drawable/ic_media_play" />
+        app:srcCompat="@drawable/ic_network_check_black_24dp" />
 </android.support.design.widget.CoordinatorLayout>

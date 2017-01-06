@@ -18,16 +18,16 @@
     <item android:id="@+id/action_new"
         android:title="@string/_new_"
         android:orderInCategory="1"
-        android:icon="@android:drawable/ic_menu_add"
+        android:icon="@drawable/ic_add_black_24dp"
         app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_edit"
         android:title="@string/rename"
         android:orderInCategory="1"
-        android:icon="@android:drawable/ic_menu_edit"
-        app:showAsAction="never"/>
+        android:icon="@drawable/ic_create_black_24dp"
+        app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_search_ble"
         android:title="@string/action_ble"
         android:orderInCategory="1"
-        android:icon="@android:drawable/ic_menu_search"
-        app:showAsAction="never"/>
+        android:icon="@drawable/ic_center_focus_strong_black_24dp"
+        app:showAsAction="ifRoom"/>
 </menu>

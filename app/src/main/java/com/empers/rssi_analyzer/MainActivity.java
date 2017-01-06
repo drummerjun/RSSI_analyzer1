@@ -15,7 +15,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.design.widget.CoordinatorLayout;
@@ -27,19 +29,23 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 
-import com.empers.rssi_analyzer.Adapter.NodeAdapter;
+import com.empers.rssi_analyzer.adapters.NodeAdapter;
 import com.empers.rssi_analyzer.ble.BluetoothLeService;
 import com.empers.rssi_analyzer.ble.BluetoothSPP;
 import com.empers.rssi_analyzer.ble.BluetoothState;
@@ -71,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
 	private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
             new ArrayList<>();
 	private boolean mConnected = false;
+    private boolean isFabShowing = true;
 	//---------------------------------------------
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothSPP mBluetooth;
@@ -108,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
                 } catch (ArrayIndexOutOfBoundsException ex) {
                     ex.printStackTrace();
                     isPatchScan = false;
+                } catch (NullPointerException ex) {
+                    ex.printStackTrace();
+                    isPatchScan = false;
                 }
 			}			
 		});
@@ -117,6 +127,19 @@ public class MainActivity extends AppCompatActivity {
 		LinearLayoutManager llm = new LinearLayoutManager(getApplicationContext());
 		llm.setOrientation(LinearLayoutManager.VERTICAL);
 		mRecList.setLayoutManager(llm);
+        mRecList.addOnScrollListener(new OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0) {
+                    hideFab();
+                    //fab1.setVisibility(View.INVISIBLE);
+                } else if (dy < 0) {
+                    showFab();
+                    //fab1.setVisibility(View.VISIBLE);
+                }
+            }
+        });
 
         new AsyncTask<Void, Void, List<Node>>() {
             @Override
@@ -132,9 +155,8 @@ public class MainActivity extends AppCompatActivity {
                     mNodes = nodes;
                     mAdapter = new NodeAdapter(MainActivity.this, nodes);
                     mRecList.setAdapter(mAdapter);
-                    fab1.setVisibility(View.VISIBLE);
                 } else {
-                    fab1.setVisibility(View.INVISIBLE);
+                    showAddNewNodeDialog();
                 }
             }
         }.execute();
@@ -144,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         if(mDeviceAddress.isEmpty()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle(R.string.empty_mac_title).setMessage(R.string.empty_mac_message);
-            builder.setPositiveButton(R.string.menu_scan, new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     scanBTMac();
@@ -156,7 +178,20 @@ public class MainActivity extends AppCompatActivity {
                     finish();
                 }
             });
-            builder.create().show();
+            AlertDialog alert = builder.create();
+            //alert.setCanceledOnTouchOutside(false);
+            alert.setCancelable(false);
+            alert.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                @Override
+                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        dialog.dismiss();
+                        finish();
+                    }
+                    return true;
+                }
+            });
+            alert.show();
         } else {
             Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
             bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
@@ -220,7 +255,11 @@ public class MainActivity extends AppCompatActivity {
 		if(mBluetooth != null) {
 			mBluetooth.stopService();
 		}
-		unbindService(mServiceConnection);
+        try {
+            unbindService(mServiceConnection);
+        } catch(IllegalArgumentException ex) {
+            ex.printStackTrace();
+        }
         mBluetoothLeService = null;
 	}
 
@@ -315,7 +354,12 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         protected void onPostExecute(List<Node> nodes) {
                             super.onPostExecute(nodes);
-                            mAdapter.updateData(nodes);
+                            if(mAdapter == null) {
+                                mAdapter = new NodeAdapter(MainActivity.this, nodes);
+                                mRecList.setAdapter(mAdapter);
+                            } else {
+                                mAdapter.updateData(nodes);
+                            }
                             mNodes = nodes;
                         }
                     }.execute(node_id, inputName);
@@ -454,38 +498,55 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
+    private void hideFab() {
+        if (isFabShowing) {
+            isFabShowing = false;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                final Point point = new Point();
+                getWindow().getWindowManager().getDefaultDisplay().getSize(point);
+                final float translation = fab1.getY() - point.y;
+                fab1.animate().translationYBy(-translation).start();
+            } else {
+                Animation animation = AnimationUtils.makeOutAnimation(MainActivity.this, true);
+                animation.setFillAfter(true);
+                animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {}
 
-        public ScrollAwareFABBehavior() {
-            super();
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        fab1.setClickable(false);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {}
+                });
+                fab1.startAnimation(animation);
+            }
         }
+    }
 
-        public ScrollAwareFABBehavior(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
+    private void showFab() {
+        if (!isFabShowing) {
+            isFabShowing = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                fab1.animate().translationY(0).start();
+            } else {
+                Animation animation = AnimationUtils.makeInAnimation(MainActivity.this, false);
+                animation.setFillAfter(true);
+                animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {}
 
-        @Override
-        public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout,
-                                           FloatingActionButton child,
-                                           View directTargetChild,
-                                           View target, int nestedScrollAxes)
-        {
-            return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL ||
-                    super.onStartNestedScroll(coordinatorLayout, child, directTargetChild, target,
-                            nestedScrollAxes);
-        }
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        fab1.setClickable(true);
+                    }
 
-        @Override
-        public void onNestedScroll(CoordinatorLayout coordinatorLayout, FloatingActionButton child,
-                                   View target, int dxConsumed, int dyConsumed,
-                                   int dxUnconsumed, int dyUnconsumed)
-        {
-            super.onNestedScroll(coordinatorLayout, child, target,
-                    dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
-            if (dyConsumed > 0 && child.getVisibility() == View.VISIBLE) {
-                child.hide();
-            } else if (dyConsumed < 0 && child.getVisibility() != View.VISIBLE) {
-                child.show();
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {}
+                });
+                fab1.startAnimation(animation);
             }
         }
     }
@@ -535,8 +596,12 @@ public class MainActivity extends AppCompatActivity {
             } else if(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 printLog("ACTION_GATT_SERVICES_DISCOVERED");
-                displayGattServices(mBluetoothLeService.getSupportedGattServices());
-                mBluetoothLeService.setCharacteristicNotification(btApp.getRX(), true);	// enable read callback
+                try {
+                    displayGattServices(mBluetoothLeService.getSupportedGattServices());
+                } catch (NullPointerException ex) {
+                    ex.printStackTrace();
+                }
+                //mBluetoothLeService.setCharacteristicNotification(btApp.getRX(), true);	// enable read callback
             } else if(BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 printLog("ACTION_DATA_AVAILABLE=" + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 parseResult(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));

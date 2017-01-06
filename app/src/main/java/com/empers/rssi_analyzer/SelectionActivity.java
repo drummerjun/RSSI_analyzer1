@@ -1,39 +1,26 @@
 package com.empers.rssi_analyzer;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.Toast;
 
-import com.empers.rssi_analyzer.Adapter.GroupGridAdapter;
+import com.empers.rssi_analyzer.adapters.GroupGridAdapter;
 import com.empers.rssi_analyzer.database.GroupDB;
 import com.empers.rssi_analyzer.objects.Group;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SelectionActivity extends AppCompatActivity {
